@@ -203,7 +203,7 @@ Presenting.prev_step = function()
 end
 
 -- Go to the beginning of the current slide.
-Presenting.top = function ()
+Presenting.top = function()
   if not H.in_presenting_mode() then
     vim.notify("Not presenting. Call `PresentingStart` first.")
     return
@@ -213,7 +213,7 @@ Presenting.top = function ()
 end
 
 -- Go to the end of the current slide.
-Presenting.bottom = function ()
+Presenting.bottom = function()
   if not H.in_presenting_mode() then
     vim.notify("Not presenting. Call `PresentingStart` first.")
     return
@@ -293,8 +293,8 @@ end
 ---@private
 H.get_win_configs = function()
   local slide_width = Presenting.config.options.width
-  local width = vim.api.nvim_get_option("columns")
-  local height = vim.api.nvim_get_option("lines")
+  local width = vim.api.nvim_get_option_value("columns", {})
+  local height = vim.api.nvim_get_option_value("lines", {})
   local offset = math.ceil((width - slide_width) / 2)
   return {
     background = {
@@ -367,24 +367,20 @@ H.parse_slides = function(lines, slide_sep, step_sep, keep_separator)
     if line:match(slide_sep) then
       if #slide.steps > 0 then
         table.insert(slide.steps, step)
-        table.insert(slides, slide) 
+        table.insert(slides, slide)
       end
       -- create new slide & step
       slide = {
         steps = {},
       }
       step = {}
-      if keep_separator then 
-        table.insert(step, line) 
-      end
+      if keep_separator then table.insert(step, line) end
     elseif line:match(step_sep) then
       if #step > 0 then
         table.insert(slide.steps, step)
         -- create new step
         step = {}
-        if keep_separator then
-          table.insert(step, line) 
-        end
+        if keep_separator then table.insert(step, line) end
       end
     else
       table.insert(step, line)
@@ -401,10 +397,10 @@ end
 ---@private
 H.configure_slide_buffer = function(buf)
   -- TODO: make this configurable via config
-  vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(buf, "filetype", Presenting._state.filetype)
-  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+  vim.api.nvim_set_option_value("filetype", Presenting._state.filetype, { buf = buf })
+  vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 end
 
 ---@param state table
@@ -412,8 +408,8 @@ end
 ---@param step integer
 ---@private
 H.set_slide_content = function(state, slide, step)
-  local orig_modifiable = vim.api.nvim_buf_get_option(state.slide_buf, "modifiable")
-  vim.api.nvim_buf_set_option(state.slide_buf, "modifiable", true)
+  local orig_modifiable = vim.api.nvim_get_option_value("modifiable", {buf=state.slide_buf})
+  vim.api.nvim_set_option_value("modifiable", true, { buf = state.slide_buf })
   state.slide = slide
   state.step = step
   local lines = {}
@@ -423,7 +419,7 @@ H.set_slide_content = function(state, slide, step)
     end
   end
   vim.api.nvim_buf_set_lines(state.slide_buf, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(state.slide_buf, "modifiable", orig_modifiable)
+  vim.api.nvim_set_option_value("modifiable", orig_modifiable, { buf = state.slide_buf })
 
   local footer_text = "presenting.nvim | " .. state.slide .. "/" .. state.n_slides
   vim.api.nvim_buf_set_lines(state.footer_buf, 0, -1, false, { footer_text })
