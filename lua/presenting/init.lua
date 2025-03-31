@@ -365,7 +365,8 @@ H.parse_slides = function(lines, slide_sep, step_sep, keep_separator)
 
   for _, line in pairs(lines) do
     if line:match(slide_sep) then
-      if #slide.steps > 0 then
+
+      if #slide.steps > 0 or #step > 0 then
         table.insert(slide.steps, step)
         table.insert(slides, slide)
       end
